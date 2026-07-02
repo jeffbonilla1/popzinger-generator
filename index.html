@@ -1,0 +1,1002 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>POPZINGERS // Zinger Generator</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Bebas+Neue&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap');
+
+  :root {
+    --yellow: #FFE234;
+    --red: #E8193C;
+    --orange: #FF6B1A;
+    --dark: #0D0D0D;
+    --dark2: #141414;
+    --dark3: #1C1C1C;
+    --border: #2A2A2A;
+    --text: #F0F0F0;
+    --muted: #666;
+    --green: #39FF14;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--dark);
+    color: var(--text);
+    font-family: 'Space Mono', monospace;
+    min-height: 100vh;
+    padding: 0;
+    overflow-x: hidden;
+  }
+
+  /* Scanline overlay */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0,0,0,0.08) 2px,
+      rgba(0,0,0,0.08) 4px
+    );
+    pointer-events: none;
+    z-index: 9999;
+  }
+
+  .header {
+    border-bottom: 3px solid var(--yellow);
+    padding: 24px 32px 20px;
+    display: flex;
+    align-items: baseline;
+    gap: 20px;
+    background: var(--dark2);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .header::after {
+    content: '🎸🎤🎧🎵🥁🎺';
+    position: absolute;
+    right: 32px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 22px;
+    letter-spacing: 4px;
+    opacity: 0.4;
+  }
+
+  .logo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 48px;
+    color: var(--yellow);
+    letter-spacing: 4px;
+    line-height: 1;
+    text-shadow: 3px 3px 0 var(--red);
+  }
+
+  .logo-sub {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    color: var(--orange);
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    border: 1px solid var(--orange);
+    padding: 3px 8px;
+    margin-left: 4px;
+  }
+
+  .main {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 40px 24px;
+  }
+
+  .section-label {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 13px;
+    letter-spacing: 4px;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+
+  /* Input zone */
+  .input-zone {
+    background: var(--dark2);
+    border: 2px solid var(--border);
+    border-radius: 4px;
+    padding: 24px;
+    margin-bottom: 24px;
+    position: relative;
+    transition: border-color 0.2s;
+  }
+
+  .input-zone:focus-within {
+    border-color: var(--yellow);
+  }
+
+  .input-zone textarea {
+    width: 100%;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: var(--text);
+    font-family: 'Space Mono', monospace;
+    font-size: 14px;
+    line-height: 1.7;
+    resize: vertical;
+    min-height: 120px;
+  }
+
+  .input-zone textarea::placeholder {
+    color: var(--muted);
+    font-style: italic;
+  }
+
+  .input-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border);
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .char-count {
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 1px;
+  }
+
+  /* Style selector */
+  .style-pills {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .style-pill {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    padding: 5px 12px;
+    border-radius: 2px;
+    cursor: pointer;
+    transition: all 0.15s;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  .style-pill:hover {
+    border-color: var(--yellow);
+    color: var(--yellow);
+  }
+
+  .style-pill.active {
+    background: var(--yellow);
+    border-color: var(--yellow);
+    color: var(--dark);
+    font-weight: 700;
+  }
+
+  /* Generate button */
+  .btn-generate {
+    width: 100%;
+    padding: 18px;
+    background: var(--red);
+    color: var(--yellow);
+    border: none;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 26px;
+    letter-spacing: 6px;
+    cursor: pointer;
+    transition: all 0.15s;
+    border-radius: 4px;
+    margin-bottom: 32px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .btn-generate::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, transparent 40%, rgba(255,255,255,0.08) 50%, transparent 60%);
+    transform: translateX(-100%);
+    transition: transform 0.4s;
+  }
+
+  .btn-generate:hover::before {
+    transform: translateX(100%);
+  }
+
+  .btn-generate:hover {
+    background: #FF2248;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(232,25,60,0.4);
+  }
+
+  .btn-generate:active {
+    transform: translateY(1px);
+  }
+
+  .btn-generate:disabled {
+    background: var(--border);
+    color: var(--muted);
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+  }
+
+  /* Loading */
+  .loading-zone {
+    display: none;
+    text-align: center;
+    padding: 40px;
+  }
+
+  .loading-zone.visible {
+    display: block;
+  }
+
+  .loading-spinner {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 18px;
+    letter-spacing: 4px;
+    color: var(--orange);
+    animation: pulse 1s ease-in-out infinite;
+  }
+
+  .loading-dots span {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    background: var(--orange);
+    border-radius: 50%;
+    margin: 0 4px;
+    animation: bounce 0.8s ease-in-out infinite;
+  }
+
+  .loading-dots span:nth-child(2) { animation-delay: 0.15s; }
+  .loading-dots span:nth-child(3) { animation-delay: 0.3s; }
+
+  @keyframes bounce {
+    0%, 80%, 100% { transform: translateY(0); opacity: 0.4; }
+    40% { transform: translateY(-10px); opacity: 1; }
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 0.6; }
+    50% { opacity: 1; }
+  }
+
+  /* Results */
+  .results-zone {
+    display: none;
+  }
+
+  .results-zone.visible {
+    display: block;
+    animation: fadeUp 0.4s ease;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .results-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .results-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 22px;
+    letter-spacing: 4px;
+    color: var(--yellow);
+  }
+
+  .btn-regenerate {
+    background: transparent;
+    border: 1px solid var(--yellow);
+    color: var(--yellow);
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    padding: 7px 14px;
+    cursor: pointer;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    transition: all 0.15s;
+    border-radius: 2px;
+  }
+
+  .btn-regenerate:hover {
+    background: var(--yellow);
+    color: var(--dark);
+  }
+
+  /* Zinger card */
+  .zinger-card {
+    background: var(--dark2);
+    border: 2px solid var(--border);
+    border-radius: 4px;
+    padding: 24px;
+    margin-bottom: 16px;
+    position: relative;
+    transition: border-color 0.2s;
+    cursor: pointer;
+  }
+
+  .zinger-card:hover {
+    border-color: var(--yellow);
+  }
+
+  .zinger-card.selected {
+    border-color: var(--green);
+    background: rgba(57, 255, 20, 0.04);
+  }
+
+  .zinger-number {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 48px;
+    color: var(--border);
+    position: absolute;
+    top: 12px;
+    right: 18px;
+    line-height: 1;
+    user-select: none;
+    transition: color 0.2s;
+  }
+
+  .zinger-card:hover .zinger-number,
+  .zinger-card.selected .zinger-number {
+    color: rgba(255, 226, 52, 0.15);
+  }
+
+  .zinger-card.selected .zinger-number {
+    color: rgba(57, 255, 20, 0.2);
+  }
+
+  .zinger-question {
+    font-family: 'Space Mono', monospace;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text);
+    line-height: 1.6;
+    margin-bottom: 12px;
+    padding-right: 48px;
+  }
+
+  .zinger-question .q-label {
+    color: var(--yellow);
+    font-size: 10px;
+    letter-spacing: 3px;
+    display: block;
+    margin-bottom: 6px;
+    font-weight: 400;
+  }
+
+  .zinger-answer {
+    font-size: 13px;
+    color: var(--orange);
+    margin-bottom: 12px;
+    line-height: 1.6;
+  }
+
+  .zinger-answer .a-label {
+    color: var(--red);
+    font-size: 10px;
+    letter-spacing: 3px;
+    display: block;
+    margin-bottom: 4px;
+  }
+
+  .zinger-funfact {
+    font-size: 12px;
+    color: var(--muted);
+    font-style: italic;
+    line-height: 1.7;
+    padding-top: 12px;
+    border-top: 1px solid var(--border);
+  }
+
+  .zinger-funfact .ff-label {
+    color: #555;
+    font-size: 10px;
+    letter-spacing: 3px;
+    display: block;
+    margin-bottom: 4px;
+    font-style: normal;
+  }
+
+  .card-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 16px;
+    padding-top: 14px;
+    border-top: 1px solid var(--border);
+  }
+
+  .btn-copy, .btn-select {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    padding: 6px 14px;
+    border-radius: 2px;
+    cursor: pointer;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    transition: all 0.15s;
+  }
+
+  .btn-copy {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--muted);
+  }
+
+  .btn-copy:hover {
+    border-color: var(--muted);
+    color: var(--text);
+  }
+
+  .btn-copy.copied {
+    border-color: var(--green);
+    color: var(--green);
+  }
+
+  .btn-select {
+    background: transparent;
+    border: 1px solid var(--green);
+    color: var(--green);
+  }
+
+  .btn-select:hover {
+    background: var(--green);
+    color: var(--dark);
+  }
+
+  .zinger-card.selected .btn-select {
+    background: var(--green);
+    color: var(--dark);
+    font-weight: 700;
+  }
+
+  /* Error */
+  .error-zone {
+    display: none;
+    background: rgba(232, 25, 60, 0.1);
+    border: 1px solid var(--red);
+    border-radius: 4px;
+    padding: 16px 20px;
+    color: var(--red);
+    font-size: 13px;
+    margin-bottom: 20px;
+  }
+
+  .error-zone.visible {
+    display: block;
+  }
+
+  /* Example box */
+  .example-box {
+    background: var(--dark3);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--yellow);
+    padding: 16px 20px;
+    border-radius: 2px;
+    margin-bottom: 32px;
+  }
+
+  .example-box .ex-label {
+    font-size: 10px;
+    letter-spacing: 3px;
+    color: var(--yellow);
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+
+  .example-box p {
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.7;
+  }
+
+  .example-box p strong {
+    color: var(--text);
+  }
+
+  /* Selected export zone */
+  .export-zone {
+    display: none;
+    background: rgba(57, 255, 20, 0.05);
+    border: 2px solid var(--green);
+    border-radius: 4px;
+    padding: 20px 24px;
+    margin-top: 24px;
+  }
+
+  .export-zone.visible {
+    display: block;
+    animation: fadeUp 0.3s ease;
+  }
+
+  .export-zone h3 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 18px;
+    letter-spacing: 4px;
+    color: var(--green);
+    margin-bottom: 14px;
+  }
+
+  .export-code {
+    background: var(--dark);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 16px;
+    font-size: 12px;
+    line-height: 1.8;
+    color: var(--text);
+    white-space: pre-wrap;
+    word-break: break-word;
+    overflow-x: auto;
+  }
+
+  .export-code .key { color: var(--yellow); }
+  .export-code .val { color: #7EC8E3; }
+  .export-code .str { color: var(--orange); }
+
+  .btn-copy-code {
+    margin-top: 12px;
+    background: transparent;
+    border: 1px solid var(--green);
+    color: var(--green);
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    padding: 8px 18px;
+    cursor: pointer;
+    border-radius: 2px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    transition: all 0.15s;
+  }
+
+  .btn-copy-code:hover {
+    background: var(--green);
+    color: var(--dark);
+  }
+
+  .footer-note {
+    margin-top: 48px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border);
+    font-size: 11px;
+    color: var(--muted);
+    text-align: center;
+    letter-spacing: 1px;
+    line-height: 1.8;
+  }
+
+  .choices-section {
+    margin-top: 16px;
+    padding-top: 14px;
+    border-top: 1px solid var(--border);
+  }
+
+  .choices-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .choice-row {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    padding: 8px 10px;
+    border-radius: 2px;
+    border: 1px solid var(--border);
+    font-size: 12px;
+  }
+
+  .choice-correct {
+    border-color: var(--green);
+    background: rgba(57,255,20,0.04);
+  }
+
+  .choice-decoy {
+    border-color: var(--border);
+  }
+
+  .choice-badge {
+    font-size: 9px;
+    letter-spacing: 2px;
+    font-weight: 700;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .choice-correct .choice-badge { color: var(--green); }
+  .choice-decoy .choice-badge { color: var(--muted); }
+
+  .choice-name-text {
+    font-weight: 700;
+    color: var(--text);
+    flex-shrink: 0;
+  }
+
+  .choice-why {
+    color: var(--muted);
+    font-style: italic;
+    font-size: 11px;
+  }
+  @media (max-width: 600px) {
+    .header { padding: 18px 16px; }
+    .logo { font-size: 36px; }
+    .main { padding: 24px 16px; }
+    .header::after { display: none; }
+    .btn-generate { font-size: 20px; padding: 14px; }
+  }
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="logo">PopZingers</div>
+  <div class="logo-sub">Zinger Generator v1.0</div>
+</header>
+
+<main class="main">
+
+  <div class="example-box">
+    <div class="ex-label">🏆 Gold Standard Reference</div>
+    <p>
+      <strong>Q:</strong> "Which Jesus-looking soft rock heartthrob fell in love with his holistic practitioner... who gave him an enema?"<br>
+      <strong>A:</strong> Kenny Loggins<br>
+      <strong>Fun Fact:</strong> "Kenny later said: 'Although I was there for a high colonic, it was her eyes that penetrated me.'"
+    </p>
+  </div>
+
+  <div class="section-label">Paste raw music fact</div>
+  <div class="input-zone">
+    <textarea 
+      id="factInput" 
+      placeholder="Paste a raw music fact here... e.g.: Kenny Loggins met his wife Lynn Sutcliffe while she was his colon hydrotherapist in 1992. He was 44 and she was 31. They married in 1992 and have three children."
+      oninput="updateCharCount()"
+    ></textarea>
+    <div class="input-meta">
+      <span class="char-count" id="charCount">0 characters</span>
+      <div class="style-pills">
+        <div class="section-label" style="margin:0; align-self:center; margin-right:6px;">Spice level:</div>
+        <button class="style-pill" onclick="setStyle('mild')">Mild 🌶️</button>
+        <button class="style-pill active" onclick="setStyle('medium')">Medium 🌶️🌶️</button>
+        <button class="style-pill" onclick="setStyle('hot')">Hot 🌶️🌶️🌶️</button>
+      </div>
+    </div>
+  </div>
+
+  <button class="btn-generate" id="generateBtn" onclick="generateZingers()">
+    ⚡ GENERATE ZINGERS ⚡
+  </button>
+
+  <div class="error-zone" id="errorZone"></div>
+
+  <div class="loading-zone" id="loadingZone">
+    <div class="loading-spinner">Cooking up some filth...</div>
+    <br>
+    <div class="loading-dots">
+      <span></span><span></span><span></span>
+    </div>
+  </div>
+
+  <div class="results-zone" id="resultsZone">
+    <div class="results-header">
+      <div class="results-title">⚡ YOUR ZINGERS</div>
+      <button class="btn-regenerate" onclick="generateZingers()">↻ Regenerate</button>
+    </div>
+    <div id="zingersContainer"></div>
+    <div class="export-zone" id="exportZone">
+      <h3>✓ Selected for Game</h3>
+      <div class="export-code" id="exportCode"></div>
+      <button class="btn-copy-code" onclick="copyExport()">Copy Game Code</button>
+    </div>
+  </div>
+
+  <div class="footer-note">
+    Internal tool only — not player-facing. Questions hardcoded to game after selection.<br>
+    PopZingers™ — For people who remember when MTV played music.
+  </div>
+
+</main>
+
+<script>
+  // API key lives server-side only, in netlify/functions/generate-zinger.js
+  // Nothing sensitive is ever exposed in this file.
+
+  let currentStyle = 'medium';
+  let currentZingers = [];
+  let selectedIndex = null;
+
+  function setStyle(style) {
+    currentStyle = style;
+    document.querySelectorAll('.style-pill').forEach(p => p.classList.remove('active'));
+    event.target.classList.add('active');
+  }
+
+  function updateCharCount() {
+    const len = document.getElementById('factInput').value.length;
+    document.getElementById('charCount').textContent = `${len} character${len !== 1 ? 's' : ''}`;
+  }
+
+  const spiceLevels = {
+    mild: "Keep it PG-13: cheeky innuendo, irony, and absurdist humor. Nothing explicitly vulgar. Think VH1 Pop-Up Video wit.",
+    medium: "Adult-humored, clever innuendo, borderline vulgar but always with wit. Think Comedy Central roast meets music trivia. Suggestive but not explicit.",
+    hot: "Go full filth-with-flair. Vulgar, crude, but still genuinely funny and clever — never just shocking. Think Stern at his sharpest, or Patrice O'Neal on music."
+  };
+
+  async function generateZingers() {
+    const fact = document.getElementById('factInput').value.trim();
+    if (!fact) {
+      showError('Paste a raw music fact first, genius.');
+      return;
+    }
+
+    setLoading(true);
+    clearError();
+    hideResults();
+
+    const systemPrompt = `You are the head writer for PopZingers — an irreverent adult music trivia game for people who remember when MTV played music. Think VH1 Pop-Up Video meets a Comedy Central roast. Your job is to transform raw music facts into quiz questions that are:
+
+- Absurdist and irreverent, but never mean-spirited to fans
+- Clever wordplay over pure shock value
+- Dripping with personality — like the funniest person at the bar is writing these
+- Specific: the WEIRD detail IS the joke. Don't genericize.
+
+GOLD STANDARD EXAMPLE:
+Raw fact: Kenny Loggins met his wife Lynn Sutcliffe while she was his colon hydrotherapist.
+Output question: "Which Jesus-looking soft rock heartthrob fell in love with his holistic practitioner... who gave him an enema?"
+Fun fact: "Kenny later said: 'Although I was there for a high colonic, it was her eyes that penetrated me.'"
+
+Notice: The answer is Kenny Loggins. The question doesn't SAY his name — it describes him hilariously so that recognizing him IS the game. The fun fact adds a fabricated-but-plausible quote or extra absurdist detail.
+
+Spice level for this batch: ${spiceLevels[currentStyle]}
+
+You must also suggest photo answer choices. The correct answer plus 3 wrong-but-plausible decoys (4 total). Decoys should be from the same era, same genre, or share a visual/biographical trait that makes them a believable wrong answer. The Kenny Loggins question uses Dan Fogelberg, Barry Gibb, and John Lennon as decoys — all Jesus-haired soft rock types. That's the logic: decoys that LOOK or feel right but aren't.
+
+RESPOND WITH VALID JSON ONLY. No markdown, no explanation, no preamble. Return this exact structure:
+{
+  "zingers": [
+    {
+      "question": "The trivia question — describe the artist without naming them, make the description the joke",
+      "answer": "Artist name",
+      "funFact": "A funny follow-up fact, fabricated quote, or absurdist detail that lands the punchline",
+      "vibe": "One-word description of this version's comedy angle (e.g. 'Innuendo', 'Absurdist', 'Dark', 'Roast')",
+      "choices": [
+        { "name": "Decoy 1 name", "why": "One sentence: why this is a plausible wrong answer" },
+        { "name": "Decoy 2 name", "why": "One sentence: why this is a plausible wrong answer" },
+        { "name": "Decoy 3 name", "why": "One sentence: why this is a plausible wrong answer" }
+      ]
+    }
+  ]
+}`;
+
+    const userPrompt = `Raw music fact to transform into 4 PopZinger versions:
+
+${fact}
+
+Generate 4 different zinger versions with different comedic angles. Same answer each time, but 4 distinct approaches to the question and fun fact.`;
+
+    try {
+      const response = await fetch("/.netlify/functions/generate-zinger", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          model: "claude-sonnet-4-20250514",
+          max_tokens: 2000,
+          system: systemPrompt,
+          messages: [{ role: "user", content: userPrompt }]
+        })
+      });
+
+      if (!response.ok) {
+        const err = await response.json();
+        throw new Error(err.error?.message || `API error ${response.status}`);
+      }
+
+      const data = await response.json();
+      const raw = data.content.map(b => b.text || '').join('');
+      
+      let parsed;
+      try {
+        const clean = raw.replace(/```json|```/g, '').trim();
+        parsed = JSON.parse(clean);
+      } catch {
+        throw new Error('Failed to parse response. Try again.');
+      }
+
+      currentZingers = parsed.zingers || [];
+      selectedIndex = null;
+      renderZingers(currentZingers);
+      setLoading(false);
+      showResults();
+
+    } catch (err) {
+      setLoading(false);
+      showError(err.message || 'Something went wrong. Try again.');
+    }
+  }
+
+  function renderZingers(zingers) {
+    const container = document.getElementById('zingersContainer');
+    container.innerHTML = '';
+
+    zingers.forEach((z, i) => {
+      // Build choices HTML — correct answer + 3 decoys
+      const allChoices = [
+        { name: z.answer, isAnswer: true },
+        ...(z.choices || []).map(c => ({ name: c.name, why: c.why, isAnswer: false }))
+      ];
+
+      const choicesHTML = allChoices.map(c => `
+        <div class="choice-row ${c.isAnswer ? 'choice-correct' : 'choice-decoy'}">
+          <div class="choice-badge">${c.isAnswer ? '✓ ANSWER' : '✗ DECOY'}</div>
+          <div class="choice-name-text">${escapeHtml(c.name)}</div>
+          ${c.why ? `<div class="choice-why">${escapeHtml(c.why)}</div>` : ''}
+        </div>
+      `).join('');
+
+      const card = document.createElement('div');
+      card.className = 'zinger-card';
+      card.id = `zinger-${i}`;
+      card.innerHTML = `
+        <div class="zinger-number">${String(i+1).padStart(2,'0')}</div>
+        ${z.vibe ? `<div style="font-size:10px;letter-spacing:3px;color:var(--orange);text-transform:uppercase;margin-bottom:10px;">${z.vibe}</div>` : ''}
+        <div class="zinger-question">
+          <span class="q-label">QUESTION</span>
+          ${escapeHtml(z.question)}
+        </div>
+        <div class="zinger-answer">
+          <span class="a-label">ANSWER</span>
+          ${escapeHtml(z.answer)}
+        </div>
+        <div class="zinger-funfact">
+          <span class="ff-label">FUN FACT</span>
+          ${escapeHtml(z.funFact)}
+        </div>
+        <div class="choices-section">
+          <span class="q-label" style="display:block;margin-bottom:10px;">PHOTO CHOICES (4 total — shuffle before hardcoding)</span>
+          <div class="choices-list">${choicesHTML}</div>
+        </div>
+        <div class="card-actions">
+          <button class="btn-copy" onclick="copyZinger(event, ${i})">Copy</button>
+          <button class="btn-select" onclick="selectZinger(${i})">Add to Game</button>
+        </div>
+      `;
+      container.appendChild(card);
+    });
+
+    document.getElementById('exportZone').classList.remove('visible');
+  }
+
+  function selectZinger(i) {
+    selectedIndex = i;
+    document.querySelectorAll('.zinger-card').forEach((c, idx) => {
+      c.classList.toggle('selected', idx === i);
+    });
+    showExport(currentZingers[i]);
+  }
+
+  function showExport(z) {
+    const exportZone = document.getElementById('exportZone');
+    const exportCode = document.getElementById('exportCode');
+
+    // Build shuffled choices array (correct + 3 decoys, randomized order)
+    const allChoices = [
+      { name: z.answer, img: toImgFilename(z.answer) },
+      ...(z.choices || []).map(c => ({ name: c.name, img: toImgFilename(c.name) }))
+    ];
+    // Fisher-Yates shuffle
+    for (let i = allChoices.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [allChoices[i], allChoices[j]] = [allChoices[j], allChoices[i]];
+    }
+
+    const choicesStr = allChoices.map(c =>
+      `    { name: "${escapeJs(c.name)}", img: "${c.img}" }`
+    ).join(',\n');
+
+    const jsObject = `{
+  id: AUTO,  // replace with next question number
+  zinger: "${escapeJs(z.question)}",
+  answer: "${escapeJs(z.answer)}",
+  choices: [
+${choicesStr}
+  ],
+  funFact: "${escapeJs(z.funFact)}"
+}`;
+
+    exportCode.textContent = jsObject;
+    exportZone.classList.add('visible');
+    exportZone.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  // Convert "Artist Name" → "artist_name.jpg" as a starting filename hint
+  function toImgFilename(name) {
+    return name.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '') + '.jpg';
+  }
+
+  async function copyExport() {
+    const code = document.getElementById('exportCode').textContent;
+    await navigator.clipboard.writeText(code);
+    const btn = event.target;
+    const orig = btn.textContent;
+    btn.textContent = '✓ Copied!';
+    setTimeout(() => btn.textContent = orig, 2000);
+  }
+
+  async function copyZinger(e, i) {
+    e.stopPropagation();
+    const z = currentZingers[i];
+    const text = `Q: ${z.question}\nA: ${z.answer}\nFun Fact: ${z.funFact}`;
+    await navigator.clipboard.writeText(text);
+    const btn = e.target;
+    btn.textContent = '✓ Copied';
+    btn.classList.add('copied');
+    setTimeout(() => {
+      btn.textContent = 'Copy';
+      btn.classList.remove('copied');
+    }, 2000);
+  }
+
+  function setLoading(on) {
+    document.getElementById('loadingZone').classList.toggle('visible', on);
+    document.getElementById('generateBtn').disabled = on;
+    document.getElementById('generateBtn').textContent = on ? '⏳ GENERATING...' : '⚡ GENERATE ZINGERS ⚡';
+  }
+
+  function showResults() {
+    document.getElementById('resultsZone').classList.add('visible');
+  }
+
+  function hideResults() {
+    document.getElementById('resultsZone').classList.remove('visible');
+  }
+
+  function showError(msg) {
+    const el = document.getElementById('errorZone');
+    el.textContent = `⚠ ${msg}`;
+    el.classList.add('visible');
+  }
+
+  function clearError() {
+    document.getElementById('errorZone').classList.remove('visible');
+  }
+
+  function escapeHtml(str) {
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  function escapeJs(str) {
+    return String(str).replace(/\\/g, '\\\\').replace(/"/g, '\\"').replace(/\n/g, '\\n');
+  }
+</script>
+</body>
+</html>
